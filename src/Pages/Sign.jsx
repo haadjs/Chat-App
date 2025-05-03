@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import auth from "../Auth/config";
+import {auth} from "../Auth/config";
+import {db} from "../Auth/config";
+
 import { useNavigate, Link } from "react-router-dom";
+import { collection, addDoc } from "firebase/firestore";
 
 const Sign = () => {
   const [name, setName] = useState("");
@@ -11,7 +14,7 @@ const Sign = () => {
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -27,6 +30,15 @@ const Sign = () => {
         setTimeout(() => navigate("/log"), 1000);
       })
       .catch((err) => setError(err.message));
+
+    try {
+      const docRef = await addDoc(collection(db, "chats"), {
+       username: name,
+      });
+      console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
   };
 
   return (
@@ -37,7 +49,9 @@ const Sign = () => {
         </h2>
 
         {error && (
-          <p className="text-red-400 text-center text-sm mb-4 animate-pulse">{error}</p>
+          <p className="text-red-400 text-center text-sm mb-4 animate-pulse">
+            {error}
+          </p>
         )}
         {success && (
           <p className="text-green-400 text-center text-sm mb-4 animate-bounce">
