@@ -1,24 +1,58 @@
 import React, { useEffect, useState } from "react";
-import { addDoc, collection, getDocs, orderBy, query } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { db } from "../Auth/config";
+import { auth } from "../Auth/config";
+
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { onAuthStateChanged } from "firebase/auth";
 
 dayjs.extend(relativeTime);
 
 const Chat = () => {
   const [chats, setChats] = useState([]);
   const [userMsg, setMsg] = useState("");
+  const [userName, setName] = useState("");
+
+  useEffect(() => {
+    let state = () => {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          const uid = user.uid;
+        } else {
+          navigate("/");
+        }
+      });
+    };
+    state();
+  }, []);
 
   useEffect(() => {
     getdata();
+    getusername();
   }, []);
+
+  let getusername = async () => {
+    const querySnapshot = await getDocs(collection(db, "username"));
+    querySnapshot.forEach((doc) => {
+      // console.log(doc.data().username)
+      setName(doc.data().username);
+    });
+  };
 
   const getdata = async () => {
     const q = query(collection(db, "chats"), orderBy("createdAt", "asc"));
     const querySnapshot = await getDocs(q);
     const chatData = [];
     querySnapshot.forEach((doc) => {
+      console.log(doc.data());
+
       chatData.push(doc.data());
     });
     setChats(chatData);
@@ -28,7 +62,7 @@ const Chat = () => {
     if (!userMsg.trim()) return;
     await addDoc(collection(db, "chats"), {
       msg: userMsg,
-      Name: "Haad",
+      Name: userName,
       createdAt: Date.now(),
     });
     setMsg("");
@@ -45,7 +79,8 @@ const Chat = () => {
       {/* Chat messages */}
       <div className="flex-1 overflow-y-auto mb-4 space-y-3 px-2">
         {chats.map((itm, idx) => {
-          const isMyMsg = itm.Name === "Haad";
+          const isMyMsg = itm.Name === userName; // yeh line fix ki gayi hai
+
           return (
             <div
               key={idx}

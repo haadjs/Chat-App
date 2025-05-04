@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import React, { useEffect, useState } from "react";
+import { createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import {auth} from "../Auth/config";
 import {db} from "../Auth/config";
 
@@ -13,6 +13,7 @@ const Sign = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,7 +33,7 @@ const Sign = () => {
       .catch((err) => setError(err.message));
 
     try {
-      const docRef = await addDoc(collection(db, "chats"), {
+      const docRef = await addDoc(collection(db, "username"), {
        username: name,
       });
       console.log("Document written with ID: ", docRef.id);
