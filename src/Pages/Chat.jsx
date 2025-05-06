@@ -19,69 +19,61 @@ dayjs.extend(relativeTime);
 const Chat = () => {
   const [chats, setChats] = useState([]);
   const [userMsg, setMsg] = useState("");
-  const [userName, setName] = useState("");
-  let navigate = useNavigate()
-  useEffect(() => {
-    let state = () => {
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          const uid = user.uid;
-        } else {
-          navigate("/");
-        }
-      });
-    };
-    state();
-  }, []);
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    getdata();
-    getusername();
-  }, []);
-
-  let getusername = async () => {
-    const querySnapshot = await getDocs(collection(db, "username"));
-    querySnapshot.forEach((doc) => {
-      // console.log(doc.data().username)
-      setName(doc.data().username);
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserEmail(user.email); // Store email
+        setUserName(user.displayName || "Anonymous"); // Optionally store name
+        console.log(user);
+        
+      } else {
+        navigate("/");
+      }
     });
-  };
+  }, []);
 
-  const getdata = async () => {
+  useEffect(() => {
+    getData();
+  }, []);
+
+  const getData = async () => {
     const q = query(collection(db, "chats"), orderBy("createdAt", "asc"));
     const querySnapshot = await getDocs(q);
     const chatData = [];
     querySnapshot.forEach((doc) => {
-      console.log(doc.data());
-
       chatData.push(doc.data());
     });
     setChats(chatData);
   };
 
-  const sendmsg = async () => {
+  const sendMsg = async () => {
     if (!userMsg.trim()) return;
     await addDoc(collection(db, "chats"), {
       msg: userMsg,
-      Name: userName,
+      email: userEmail,
+      name: userName,
       createdAt: Date.now(),
     });
     setMsg("");
-    getdata();
+    getData();
   };
 
-  let logout = async () => {
-  try {
-    await signOut(auth);
-    navigate("/"); // Redirect to login or home page
-  } catch (error) {
-    console.error("Error signing out:", error);
-  }
-  }
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 to-gray-800 text-white p-4">
-      {/* Chat header */}
+      {/* Chat Header */}
       <div className="flex justify-between text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
         <p>💬 ChatZone Dark</p>
         <button onClick={logout} className="text-red-400 hover:underline">
@@ -89,10 +81,10 @@ const Chat = () => {
         </button>
       </div>
 
-      {/* Chat messages */}
+      {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto mb-4 space-y-3 px-2">
         {chats.map((itm, idx) => {
-          const isMyMsg = itm.Name === userName; // yeh line fix ki gayi hai
+          const isMyMsg = itm.email === userEmail;
 
           return (
             <div
@@ -103,7 +95,7 @@ const Chat = () => {
                   : "bg-gray-700 text-white mr-auto text-left"
               }`}
             >
-              <p className="text-sm font-semibold">{itm.Name}</p>
+              <p className="text-sm font-semibold">{itm.name}</p>
               <p className="break-words">{itm.msg}</p>
               <p className="text-xs text-gray-300 mt-1">
                 {dayjs(itm.createdAt).fromNow()}
@@ -113,7 +105,7 @@ const Chat = () => {
         })}
       </div>
 
-      {/* Message input */}
+      {/* Message Input */}
       <div className="flex gap-2 items-center">
         <input
           type="text"
@@ -123,7 +115,7 @@ const Chat = () => {
           className="flex-1 bg-gray-700 text-white placeholder-gray-400 p-3 rounded-full outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <button
-          onClick={sendmsg}
+          onClick={sendMsg}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-full shadow"
         >
           Send
