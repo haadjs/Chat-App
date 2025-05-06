@@ -82,7 +82,7 @@ const Chat = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 to-gray-800 text-white p-4">
       {/* Chat Header */}
       <div className="flex justify-between text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
-        <p>💬 ChatZone Dark</p>
+        <p>💬 ChatBOX Dark</p>
         <button onClick={logout} className="text-red-400 hover:underline">
           Logout
         </button>
