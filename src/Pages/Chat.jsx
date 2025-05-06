@@ -11,7 +11,8 @@ import { auth } from "../Auth/config";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 dayjs.extend(relativeTime);
 
@@ -19,7 +20,7 @@ const Chat = () => {
   const [chats, setChats] = useState([]);
   const [userMsg, setMsg] = useState("");
   const [userName, setName] = useState("");
-
+  let navigate = useNavigate()
   useEffect(() => {
     let state = () => {
       onAuthStateChanged(auth, (user) => {
@@ -69,11 +70,23 @@ const Chat = () => {
     getdata();
   };
 
+  let logout = async () => {
+  try {
+    await signOut(auth);
+    navigate("/"); // Redirect to login or home page
+  } catch (error) {
+    console.error("Error signing out:", error);
+  }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 to-gray-800 text-white p-4">
       {/* Chat header */}
-      <div className="text-center text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
-        💬 ChatZone Dark
+      <div className="flex justify-between text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
+        <p>💬 ChatZone Dark</p>
+        <button onClick={logout} className="text-red-400 hover:underline">
+          Logout
+        </button>
       </div>
 
       {/* Chat messages */}
