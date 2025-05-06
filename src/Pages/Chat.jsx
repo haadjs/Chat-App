@@ -27,9 +27,7 @@ const Chat = () => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserEmail(user.email); // Store email
-        setUserName(user.displayName || "Anonymous"); // Optionally store name
-        console.log(user);
-        
+       
       } else {
         navigate("/");
       }
@@ -38,7 +36,16 @@ const Chat = () => {
 
   useEffect(() => {
     getData();
+    getUsername()
   }, []);
+
+  let getUsername = async () => {
+    const querySnapshot = await getDocs(collection(db, "username"));
+    querySnapshot.forEach((doc) => {
+      console.log(doc.data().username);
+      setUserName(doc.data().username || "Anonymous"); // Optionally store name
+    });
+  };
 
   const getData = async () => {
     const q = query(collection(db, "chats"), orderBy("createdAt", "asc"));
@@ -54,7 +61,6 @@ const Chat = () => {
     if (!userMsg.trim()) return;
     await addDoc(collection(db, "chats"), {
       msg: userMsg,
-      email: userEmail,
       name: userName,
       createdAt: Date.now(),
     });
@@ -84,7 +90,7 @@ const Chat = () => {
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto mb-4 space-y-3 px-2">
         {chats.map((itm, idx) => {
-          const isMyMsg = itm.email === userEmail;
+          const isMyMsg = itm.name === userName;
 
           return (
             <div
