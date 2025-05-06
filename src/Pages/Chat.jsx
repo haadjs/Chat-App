@@ -19,31 +19,32 @@ dayjs.extend(relativeTime);
 const Chat = () => {
   const [chats, setChats] = useState([]);
   const [userMsg, setMsg] = useState("");
-  const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUserEmail(user.email); // Store email
-       
+        getUsername(user.uid);
       } else {
         navigate("/");
       }
     });
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     getData();
-    getUsername()
   }, []);
 
-  let getUsername = async () => {
+  const getUsername = async (uid) => {
     const querySnapshot = await getDocs(collection(db, "username"));
     querySnapshot.forEach((doc) => {
-      console.log(doc.data().username);
-      setUserName(doc.data().username || "Anonymous"); // Optionally store name
+      const data = doc.data();
+      if (data.uid === uid) {
+        setUserName(data.username || "Anonymous");
+      }
     });
   };
 
@@ -97,8 +98,8 @@ const Chat = () => {
               key={idx}
               className={`max-w-[70%] p-3 rounded-xl shadow-lg ${
                 isMyMsg
-                  ? "bg-indigo-600 text-white ml-auto text-right"
-                  : "bg-gray-700 text-white mr-auto text-left"
+                  ? "bg-indigo-600 text-white ml-auto text-right" // right side
+                  : "bg-gray-700 text-white mr-auto text-left" // left side
               }`}
             >
               <p className="text-sm font-semibold">{itm.name}</p>

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
-import {auth} from "../Auth/config";
-import {db} from "../Auth/config";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+} from "firebase/auth";
+import { auth } from "../Auth/config";
+import { db } from "../Auth/config";
 
 import { useNavigate, Link } from "react-router-dom";
 import { collection, addDoc } from "firebase/firestore";
@@ -14,7 +17,6 @@ const Sign = () => {
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -25,20 +27,24 @@ const Sign = () => {
       return;
     }
 
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        setSuccess("Account created successfully!");
-        setTimeout(() => navigate("/log"), 1000);
-      })
-      .catch((err) => setError(err.message));
-
     try {
-      const docRef = await addDoc(collection(db, "username"), {
-       username: name,
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Store username and uid in Firestore
+      await addDoc(collection(db, "username"), {
+        uid: user.uid,
+        username: name,
       });
-      console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
+
+      setSuccess("Account created successfully!");
+      setTimeout(() => navigate("/log"), 1000);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
